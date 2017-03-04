@@ -34,27 +34,33 @@ module.exports = {
   // Necessary plugins for hot load
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
-    new webpack.NoErrorsPlugin(),
-    new ExtractTextPlugin('style.css', { allChunks: true })
+    new webpack.NoEmitOnErrorsPlugin(),
+    new ExtractTextPlugin({filename: 'style.css', allChunks: true }),
+    new webpack.LoaderOptionsPlugin({
+      // test: /\.xxx$/, // may apply this only for some modules
+      options: {
+        // Additional plugins for CSS post processing using postcss-loader
+        // postcss:
+        postcss: [
+          require('autoprefixer'), // Automatically include vendor prefixes
+          require('postcss-nested') // Enable nested rules, like in Sass
+        ]
+      }
+    })
   ],
 
   // Transform source code using Babel and React Hot Loader
   module: {
     loaders: [
-      { test: /\.jsx?$/, exclude: /node_modules/, loaders: ["react-hot", "babel-loader"] },
-      { test: /\.css$/, loader: ExtractTextPlugin.extract('style-loader', 'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]!postcss-loader') }
+      { test: /\.jsx?$/, exclude: /node_modules/, loaders: ["react-hot-loader", "babel-loader"] },
+      { test: /\.css$/, loader: ExtractTextPlugin.extract({
+        fallback:'style-loader', use:'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]!postcss-loader'
+      })}
     ]
   },
 
   // Automatically transform files with these extensions
   resolve: {
-    extensions: ['', '.js', '.jsx', '.css']
+    extensions: ['.js', '.jsx', '.css']
   },
-
-  // Additional plugins for CSS post processing using postcss-loader
-  postcss: [
-    require('autoprefixer'), // Automatically include vendor prefixes
-    require('postcss-nested') // Enable nested rules, like in Sass
-  ]
-
 }
